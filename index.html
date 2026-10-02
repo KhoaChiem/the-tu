@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Thẻ Từ">
+<title>Thẻ Từ Cambridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a school-notebook (vở ô li) world — topic shelf on the home screen, one big ruled card per study screen */
+:root{
+  --bg:#EEF2F8; --surface:#FFFFFF; --ink:#1E2944; --muted:#5B6683;
+  --grid:#D5DFEE; --grid-strong:#B7C7E2; --margin:#E25D5D;
+  --accent:#2B66D9; --accent-ink:#FFFFFF; --good:#1F9D62; --warn:#D9822B; --bad:#D04545;
+  --shadow:0 1px 2px rgba(30,41,68,.08),0 6px 18px rgba(30,41,68,.08);
+  --font-display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --font-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111727; --surface:#1A2236; --ink:#E7EDF8; --muted:#9AA6C2;
+  --grid:#25304A; --grid-strong:#33415F; --margin:#E06B6B;
+  --accent:#5B8CF0; --accent-ink:#0E1424; --good:#3CC283; --warn:#E8A050; --bad:#EA6B6B;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111727; --surface:#1A2236; --ink:#E7EDF8; --muted:#9AA6C2;
+  --grid:#25304A; --grid-strong:#33415F; --margin:#E06B6B;
+  --accent:#5B8CF0; --accent-ink:#0E1424; --good:#3CC283; --warn:#E8A050; --bad:#EA6B6B;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.35); color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;margin:0}
+.wrap{max-width:960px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2{font-family:var(--font-display);line-height:1.1;margin:0;text-wrap:balance}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.top h1{font-size:clamp(28px,5vw,40px);font-weight:800}
+.top h1 span{color:var(--margin)}
+.top .sub{color:var(--muted);font-size:14px;flex-basis:100%}
+.back{border:1px solid var(--grid-strong);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:600}
+
+/* overall progress */
+.overall{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);margin-bottom:20px;flex-wrap:wrap}
+.overall b{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
+.bar{flex:1;min-width:140px;height:10px;border-radius:99px;background:var(--grid);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--good);border-radius:99px;transition:width .4s}
+.reset{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:13px}
+
+/* topic shelf */
+.group-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:22px 0 10px}
+.topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.topic{position:relative;text-align:left;border:0;background:var(--surface);border-radius:14px;padding:14px 14px 12px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;overflow:hidden;transition:transform .15s}
+.topic::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c)}
+.topic:hover{transform:translateY(-2px)}
+.topic .em{font-size:30px;line-height:1}
+.topic .no{font-size:12px;color:var(--muted);font-weight:600}
+.topic .en{font-family:var(--font-display);font-size:19px;font-weight:700;line-height:1.1}
+.topic .vi{font-size:13px;color:var(--muted)}
+.topic .mini{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:4px}
+.topic .mini .bar{height:6px;min-width:0}
+
+/* study screen */
+.modes{display:flex;gap:6px;background:var(--surface);padding:5px;border-radius:999px;box-shadow:var(--shadow);width:max-content;max-width:100%;overflow-x:auto;margin-bottom:16px}
+.modes button{border:0;background:none;padding:8px 16px;border-radius:999px;font-weight:600;white-space:nowrap;color:var(--muted)}
+.modes button[aria-pressed="true"]{background:var(--c,var(--accent));color:#fff}
+.opts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:1px solid var(--grid-strong);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{border-color:var(--c,var(--accent));color:var(--c,var(--accent));font-weight:700}
+
+/* the card */
+.stage{perspective:1400px;max-width:520px;margin:0 auto}
+.card{position:relative;width:100%;aspect-ratio:4/3;max-width:100%;cursor:pointer;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);border:0;background:none;padding:0}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 20px 20px 40px;overflow:hidden;
+  background-color:var(--surface);
+  background-image:
+    linear-gradient(90deg,transparent 28px,var(--margin) 28px,var(--margin) 30px,transparent 30px),
+    linear-gradient(var(--grid-strong) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    linear-gradient(var(--grid) 1px,transparent 1px);
+  background-size:100% 100%,32px 32px,8px 8px,8px 8px}
+.face.back{transform:rotateY(180deg)}
+.face .tag{position:absolute;top:12px;right:16px;font-size:12px;font-weight:700;color:var(--c);letter-spacing:.04em}
+.face .pic{font-size:clamp(64px,16vw,104px);line-height:1}
+.face .pic svg{width:clamp(110px,28vw,150px);height:auto;display:block}
+.face .letter{font-family:var(--font-display);font-size:clamp(64px,16vw,96px);font-weight:800;color:var(--c);line-height:1}
+.face .word{font-family:var(--font-display);font-weight:800;font-size:clamp(30px,7vw,48px);line-height:1.05;text-align:center;text-wrap:balance}
+.face .vi{font-weight:700;font-size:clamp(24px,5.5vw,36px);text-align:center;text-wrap:balance}
+.face .hint{font-size:12px;color:var(--muted)}
+.swatch{width:clamp(90px,22vw,130px);aspect-ratio:1;border-radius:50%;border:3px solid var(--grid-strong)}
+.say{position:absolute;bottom:12px;right:14px;border:0;background:var(--c);color:#fff;border-radius:999px;width:44px;height:44px;font-size:20px;display:grid;place-items:center}
+.count{text-align:center;color:var(--muted);font-variant-numeric:tabular-nums;margin:12px 0 4px;font-weight:600}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.btn{border:0;border-radius:14px;padding:12px 18px;font-weight:700;background:var(--surface);box-shadow:var(--shadow);min-width:52px}
+.btn.again{color:var(--warn)}
+.btn.know{background:var(--good);color:#fff}
+.btn.primary{background:var(--c,var(--accent));color:#fff}
+.known-badge{display:inline-block;font-size:12px;font-weight:700;color:var(--good);margin-left:6px}
+.empty{text-align:center;padding:40px 16px;color:var(--muted)}
+.empty b{display:block;font-family:var(--font-display);font-size:26px;color:var(--ink)}
+
+/* quiz */
+.q-card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:20px;max-width:560px;margin:0 auto;text-align:center}
+.q-prompt{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:150px;justify-content:center}
+.q-prompt .pic{font-size:72px;line-height:1}
+.q-prompt .pic svg{width:120px;height:auto}
+.q-prompt .vi{font-size:24px;font-weight:700}
+.q-prompt .big-say{border:0;background:var(--c);color:#fff;border-radius:999px;width:84px;height:84px;font-size:36px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.choice{border:2px solid var(--grid-strong);background:var(--surface);border-radius:14px;padding:14px 8px;font-family:var(--font-display);font-size:clamp(18px,4.5vw,24px);font-weight:700;line-height:1.1;min-width:0;overflow-wrap:anywhere}
+.choice.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.choice.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+.q-top{display:flex;justify-content:space-between;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;margin-bottom:6px}
+.stars{font-size:40px;letter-spacing:6px}
+
+/* memory */
+.mem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:640px;margin:0 auto}
+@media (max-width:520px){.mem{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tile{aspect-ratio:3/4;border:0;border-radius:14px;background:var(--c);color:#fff;font-family:var(--font-display);font-weight:800;font-size:28px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;min-width:0;transition:transform .2s}
+.tile.open,.tile.done{background:var(--surface);color:var(--ink);border:2px solid var(--c)}
+.tile.done{opacity:.55}
+.tile .t-pic{font-size:32px;line-height:1}
+.tile .t-pic svg{width:56px;height:auto}
+.tile .t-word{font-size:clamp(13px,3.4vw,17px);line-height:1.1;text-align:center;overflow-wrap:anywhere}
+.tile .t-vi{font-family:var(--font-body);font-size:clamp(12px,3.2vw,15px);font-weight:700;line-height:1.2;text-align:center;overflow-wrap:anywhere}
+.mem-info{text-align:center;color:var(--muted);margin-bottom:12px;font-weight:600}
+
+.foot{margin-top:28px;color:var(--muted);font-size:12.5px;max-width:65ch}
+@media (prefers-reduced-motion:reduce){.card,.topic,.tile,.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app"></div>
+
+<script>
+const SW = c => ({sw:c});
+const PREP = k => ({prep:k});
+const LEVELS=[{id:'starters',name:'Starters',sub:'Giai đoạn 1 · lớp 3 · 11 bài'},{id:'movers',name:'Movers',sub:'Giai đoạn 2 · lớp 4 · 11 bài'},{id:'flyers',name:'Flyers',sub:'Giai đoạn 3 · lớp 5 · 10 bài'}];
+const T_S=[
+ {id:"t1", no:"Bài 1.1", en:"Family & Feelings", vi:"Gia đình & Cảm xúc", em:"👨‍👩‍👧", c:"#D9534F", items:[
+  ["mother (mum)","mẹ","👩"],["father (dad)","bố","👨"],["sister","chị / em gái","👧"],["brother","anh / em trai","👦"],
+  ["grandmother","bà","👵"],["grandfather","ông","👴"],["baby","em bé","👶"],["family","gia đình","👨‍👩‍👧‍👦"],
+  ["happy","vui","😄"],["sad","buồn","😢"],["hungry","đói","🍽️"],["thirsty","khát","🥤"],["tired","mệt","😴"],["angry","tức giận","😠"],
+  ["scared","sợ","😨"],["tall","cao","🦒"],["short","thấp / ngắn","🐭"],["young","trẻ","🧒"],["old","già / cũ","🧓"],["big","to","🐘"],["small","nhỏ","🐜"]]},
+ {id:"t2", no:"Bài 1.2", en:"School things & Food", vi:"Đồ dùng học tập & Đồ ăn", em:"🎒", c:"#E0832B", items:[
+  ["pen","bút mực","🖊️"],["pencil","bút chì","✏️"],["ruler","thước kẻ","📏"],["eraser","cục tẩy",null],["book","quyển sách","📕"],
+  ["bag","cặp sách","🎒"],["desk","bàn học",null],["chair","ghế","🪑"],["pencil case","hộp bút","👝"],["board","bảng",null],
+  ["apple","quả táo","🍎"],["orange","quả cam","🍊"],["banana","quả chuối","🍌"],["egg","quả trứng","🥚"],["ice cream","kem","🍦"],
+  ["tomato","cà chua","🍅"],["potato","khoai tây","🥔"],["cake","bánh ngọt","🍰"]]},
+ {id:"t3", no:"Bài 1.3", en:"Toys & Colours", vi:"Đồ chơi & Màu sắc", em:"🧸", c:"#C99A12", items:[
+  ["ball","quả bóng","⚽"],["doll","búp bê","🪆"],["car","ô tô","🚗"],["kite","cái diều","🪁"],["robot","rô-bốt","🤖"],
+  ["teddy bear","gấu bông","🧸"],["train","tàu hỏa","🚂"],["bike","xe đạp","🚲"],["game","trò chơi","🎲"],["balloon","bóng bay","🎈"],
+  ["red","màu đỏ",SW("#E53935")],["blue","màu xanh dương",SW("#1E63D6")],["green","màu xanh lá",SW("#2E9D44")],["yellow","màu vàng",SW("#F6CD1F")],
+  ["pink","màu hồng",SW("#F48FB1")],["purple","màu tím",SW("#8E44AD")],["orange","màu cam",SW("#F28C1E")],["black","màu đen",SW("#111111")],
+  ["white","màu trắng",SW("#FFFFFF")],["brown","màu nâu",SW("#8B5A2B")],["grey","màu xám",SW("#9E9E9E")]]},
+ {id:"t4", no:"Bài 1.4", en:"Body & Clothes", vi:"Cơ thể & Quần áo", em:"👕", c:"#4E9F3D", items:[
+  ["head","đầu","🙂"],["face","khuôn mặt","😊"],["hair","tóc","💇"],["eye","mắt","👁️"],["ear","tai","👂"],["nose","mũi","👃"],
+  ["mouth","miệng","👄"],["arm","cánh tay","💪"],["hand","bàn tay","✋"],["leg","chân","🦵"],["foot / feet","bàn chân","🦶"],
+  ["T-shirt","áo phông","👕"],["shirt","áo sơ mi","👔"],["skirt","chân váy",null],["dress","váy liền","👗"],["trousers","quần dài","👖"],
+  ["jacket","áo khoác","🧥"],["hat","mũ","👒"],["shoes","giày","👟"],["socks","tất","🧦"],["glasses","kính","👓"]]},
+ {id:"t5", no:"Bài 1.5", en:"Animals", vi:"Con vật", em:"🦁", c:"#18978C", items:[
+  ["cat","con mèo","🐱"],["dog","con chó","🐶"],["bird","con chim","🐦"],["fish","con cá","🐟"],["horse","con ngựa","🐴"],
+  ["cow","con bò","🐮"],["duck","con vịt","🦆"],["chicken","con gà","🐔"],["goat","con dê","🐐"],["sheep","con cừu","🐑"],
+  ["tiger","con hổ","🐯"],["elephant","con voi","🐘"],["monkey","con khỉ","🐒"],["giraffe","hươu cao cổ","🦒"],["crocodile","cá sấu","🐊"],
+  ["hippo","hà mã","🦛"],["zebra","ngựa vằn","🦓"],["bear","con gấu","🐻"],["snake","con rắn","🐍"],["lizard","thằn lằn","🦎"],
+  ["spider","con nhện","🕷️"],["tail","cái đuôi",null]]},
+ {id:"t6", no:"Bài 1.6", en:"Actions & Sports", vi:"Hành động & Thể thao", em:"⚽", c:"#2B66D9", items:[
+  ["swim","bơi","🏊"],["run","chạy","🏃"],["jump","nhảy","🦘"],["fly","bay","🕊️"],["climb","leo trèo","🧗"],["walk","đi bộ","🚶"],
+  ["sing","hát","🎤"],["dance","nhảy múa","💃"],["draw","vẽ","✏️"],["read","đọc","📖"],["write","viết","✍️"],["catch","bắt (bóng)","🧤"],
+  ["throw","ném","🤾"],["kick","đá","🥅"],["play football","chơi bóng đá","⚽"],["play basketball","chơi bóng rổ","🏀"],
+  ["play tennis","chơi quần vợt","🎾"],["play badminton","chơi cầu lông","🏸"],["ride a bike","đi xe đạp","🚴"],["ride a horse","cưỡi ngựa","🏇"]]},
+ {id:"t7", no:"Bài 1.7", en:"My home", vi:"Nhà của em", em:"🏠", c:"#7A5BC7", items:[
+  ["bedroom","phòng ngủ","🛏️"],["bathroom","phòng tắm","🛁"],["kitchen","nhà bếp","🍳"],["living room","phòng khách","🛋️"],
+  ["garden","khu vườn","🌷"],["bed","giường","🛏️"],["table","cái bàn",null],["sofa","ghế sô-pha","🛋️"],["lamp","đèn","💡"],
+  ["cupboard","tủ",null],["mirror","gương","🪞"],["clock","đồng hồ","🕰️"],["picture","bức tranh","🖼️"],["window","cửa sổ","🪟"],
+  ["door","cửa ra vào","🚪"],["wall","bức tường","🧱"],["floor","sàn nhà",null],
+  ["in","ở trong",PREP("in")],["on","ở trên",PREP("on")],["under","ở dưới",PREP("under")],["next to","bên cạnh",PREP("next")],
+  ["behind","phía sau",PREP("behind")],["in front of","phía trước",PREP("front")],["between","ở giữa",PREP("between")]]},
+ {id:"t8", no:"Bài 1.8", en:"Food & My day", vi:"Đồ ăn & Một ngày của em", em:"🍚", c:"#C24D8C", items:[
+  ["rice","cơm","🍚"],["bread","bánh mì","🍞"],["milk","sữa","🥛"],["water","nước","💧"],["juice","nước ép","🧃"],
+  ["chicken","thịt gà","🍗"],["meat","thịt","🥩"],["chips","khoai tây chiên","🍟"],["carrot","cà rốt","🥕"],["burger","bánh hăm-bơ-gơ","🍔"],
+  ["sausage","xúc xích","🌭"],["lemonade","nước chanh","🍋"],["get up","thức dậy","⏰"],["have breakfast","ăn sáng","🥣"],
+  ["go to school","đi học","🏫"],["have lunch","ăn trưa","🍱"],["do homework","làm bài tập","📝"],["watch TV","xem ti vi","📺"],
+  ["have dinner","ăn tối","🍽️"],["go to bed","đi ngủ","🛌"]]},
+ {id:"t9", no:"Bài 1.9", en:"Park & Beach", vi:"Công viên & Bãi biển", em:"🏖️", c:"#3A8F4A", items:[
+  ["park","công viên","🏞️"],["beach","bãi biển","🏖️"],["sea","biển","🌊"],["sand","cát","🏝️"],["tree","cái cây","🌳"],
+  ["flower","bông hoa","🌸"],["grass","bãi cỏ","🌱"],["playground","sân chơi","🛝"],["sit","ngồi","🪑"],["stand","đứng","🧍"],
+  ["sleep","ngủ","😴"],["smile","mỉm cười","🙂"],["laugh","cười to","😂"],["wave","vẫy tay","👋"],["fly a kite","thả diều","🪁"],
+  ["take a photo","chụp ảnh","📷"],["paint","tô / vẽ màu","🖌️"]]},
+ {id:"t10", no:"Bài 1.10", en:"Town & People", vi:"Phố phường & Mọi người", em:"🏪", c:"#9A6A3A", items:[
+  ["shop","cửa hàng","🏪"],["zoo","sở thú","🦁"],["street","đường phố","🛣️"],["house","ngôi nhà","🏠"],["flat","căn hộ","🏢"],
+  ["teacher","giáo viên","🧑‍🏫"],["doctor","bác sĩ","🧑‍⚕️"],["friend","bạn","🤝"],["aunt","cô / dì / bác gái","👩"],["uncle","chú / cậu / bác trai","👨"],
+  ["cousin","anh chị em họ","🧒"],["man","người đàn ông","👨"],["woman","người phụ nữ","👩"],["boy","cậu bé","👦"],["girl","cô bé","👧"]]},
+ {id:"t11", no:"Bài 1.11", en:"Classroom", vi:"Lớp học", em:"✏️", c:"#4F5A78", items:[
+  ["open","mở","📖"],["close","đóng","📕"],["sit down","ngồi xuống","🪑"],["stand up","đứng lên","🧍"],["listen","nghe","👂"],
+  ["look","nhìn","👀"],["point","chỉ","👉"],["colour","tô màu","🖍️"],["count","đếm","🔢"],["put","đặt / để","📥"],["give","đưa","🎁"],
+  ["come here","lại đây","🫴"],["please","làm ơn / vui lòng","🙏"],["thank you","cảm ơn","💐"],["sorry","xin lỗi","😔"]]},
+ {id:"g1", no:"Ngữ pháp", en:"Irregular plurals", vi:"Số nhiều bất quy tắc", em:"👥", c:"#B4423A", grammar:true, items:[
+  ["man","men"],["woman","women"],["child","children"],["person","people"],["foot","feet"],["tooth","teeth"],["mouse","mice"],["fish","fish"],["sheep","sheep"]]},
+ {id:"g2", no:"Ngữ pháp", en:"I → my · I am", vi:"Đại từ, sở hữu & to be", em:"🙋", c:"#B4423A", grammar:true, items:[
+  ["I","my · I am"],["you","your · you are"],["he","his · he is"],["she","her · she is"],["it","its · it is"],["we","our · we are"],["they","their · they are"]]},
+ {id:"g3", no:"Ngữ pháp", en:"Question words", vi:"Từ để hỏi", em:"❓", c:"#B4423A", grammar:true, items:[
+  ["What?","cái gì?"],["What colour?","màu gì?"],["Who?","ai?"],["Where?","ở đâu?"],["How many?","bao nhiêu? (đếm)"],["How old?","bao nhiêu tuổi?"],["Which?","cái nào?"]]},
+];
+const T_M=[
+ {id:"m1", no:"Bài 2.1", en:"My week & Free time", vi:"Tuần của em & Giờ rảnh", em:"📅", c:"#D9534F", items:[
+  ["Monday","thứ Hai",null],["Tuesday","thứ Ba",null],["Wednesday","thứ Tư",null],["Thursday","thứ Năm",null],
+  ["Friday","thứ Sáu",null],["Saturday","thứ Bảy",null],["Sunday","Chủ nhật",null],["weekend","cuối tuần","🎉"],
+  ["read comics","đọc truyện tranh","📚"],["go to the cinema","đi xem phim","🎬"],["go swimming","đi bơi","🏊"],
+  ["go shopping","đi mua sắm","🛍️"],["play chess","chơi cờ vua","♟️"],["roller skate","trượt pa-tin","🛼"],
+  ["ice skate","trượt băng","⛸️"],["sail","đi thuyền buồm","⛵"],["go fishing","đi câu cá","🎣"],
+  ["play the guitar","chơi đàn ghi-ta","🎸"],["play the piano","chơi đàn piano","🎹"],["collect stickers","sưu tầm hình dán","⭐"]]},
+ {id:"m2", no:"Bài 2.2", en:"Food & Shopping", vi:"Đồ ăn & Mua sắm", em:"🛒", c:"#E0832B", items:[
+  ["cheese","phô mai","🧀"],["soup","súp, canh","🍲"],["sandwich","bánh mì kẹp","🥪"],["pasta","mì Ý","🍝"],
+  ["salad","sa-lát","🥗"],["pancake","bánh kếp","🥞"],["vegetables","rau củ","🥦"],["fruit","trái cây","🍇"],
+  ["sugar","đường",null],["butter","bơ","🧈"],["tea","trà","🍵"],["coffee","cà phê","☕"],
+  ["bottle","cái chai","🍾"],["glass","cái cốc thủy tinh","🥛"],["cup","cái tách",null],["bowl","cái bát","🥣"],
+  ["plate","cái đĩa","🍽️"],["box","cái hộp","📦"],["market","chợ","🧺"],["money","tiền","💰"],["buy","mua","🛒"],["sell","bán","🏷️"]]},
+ {id:"m3", no:"Bài 2.3", en:"Time & Weather", vi:"Thời gian & Thời tiết", em:"⛅", c:"#C99A12", items:[
+  ["yesterday","hôm qua","⏮️"],["last night","tối qua","🌙"],["last week","tuần trước","🗓️"],["ago","cách đây","⏳"],
+  ["this morning","sáng nay","🌅"],["weather","thời tiết","🌦️"],["sunny","có nắng","☀️"],["cloudy","nhiều mây","☁️"],
+  ["rainy","có mưa","🌧️"],["windy","nhiều gió","💨"],["snow","tuyết","❄️"],["hot","nóng","🥵"],["cold","lạnh","🥶"],
+  ["rainbow","cầu vồng","🌈"],["umbrella","cái ô","☂️"]]},
+ {id:"m4", no:"Bài 2.4", en:"Housework & Activities", vi:"Việc nhà & Hoạt động", em:"🧹", c:"#4E9F3D", items:[
+  ["clean","lau dọn · cleaned","🧽"],["wash","rửa, giặt · washed","🫧"],["cook","nấu ăn · cooked","🍳"],["tidy","dọn gọn · tidied","🧹"],
+  ["help","giúp đỡ · helped","🤝"],["water the flowers","tưới hoa · watered","🪴"],["carry","mang, xách · carried","📦"],
+  ["visit","thăm · visited","🏡"],["laugh","cười to · laughed","😂"],["shout","hét · shouted","📢"],["listen","nghe · listened","🎧"],
+  ["talk","nói chuyện · talked","💬"],["start","bắt đầu · started","🏁"],["stop","dừng · stopped","🛑"],["cry","khóc · cried","😭"],
+  ["study","học · studied","📚"],["live","sống · lived","🏘️"],["want","muốn · wanted","🙋"]]},
+ {id:"m5", no:"Bài 2.5", en:"Holiday", vi:"Kỳ nghỉ", em:"🧳", c:"#18978C", items:[
+  ["holiday","kỳ nghỉ","🏖️"],["suitcase","va-li","🧳"],["map","bản đồ","🗺️"],["camera","máy ảnh","📷"],
+  ["hotel","khách sạn","🏨"],["tent","cái lều","⛺"],["picnic","dã ngoại","🧺"],["postcard","bưu thiếp",null],
+  ["swimsuit","đồ bơi","🩱"],["sunglasses","kính râm","🕶️"],["shell","vỏ sò","🐚"],["sandcastle","lâu đài cát","🏰"]]},
+ {id:"m6", no:"Bài 2.6", en:"Wild animals & Adjectives", vi:"Thú hoang dã & Tính từ", em:"🐼", c:"#2B66D9", items:[
+  ["kangaroo","chuột túi","🦘"],["dolphin","cá heo","🐬"],["whale","cá voi","🐋"],["shark","cá mập","🦈"],
+  ["panda","gấu trúc","🐼"],["parrot","con vẹt","🦜"],["penguin","chim cánh cụt","🐧"],["bat","con dơi","🦇"],
+  ["lion","sư tử","🦁"],["bee","con ong","🐝"],["frog","con ếch","🐸"],["kitten","mèo con","🐱"],["puppy","chó con","🐶"],
+  ["strong","khỏe","💪"],["weak","yếu",null],["loud","ồn, to","🔊"],["quiet","yên lặng","🤫"],["clean","sạch","✨"],
+  ["dirty","bẩn",null],["easy","dễ","👌"],["difficult","khó","🧩"],["dangerous","nguy hiểm","⚠️"],["heavy","nặng","🏋️"],
+  ["clever","thông minh","🧠"],["funny","buồn cười","🤡"]]},
+ {id:"m7", no:"Bài 2.7", en:"Nature & Places", vi:"Thiên nhiên & Địa điểm", em:"🏔️", c:"#7A5BC7", items:[
+  ["mountain","núi","⛰️"],["river","dòng sông","🏞️"],["lake","hồ","🛶"],["island","hòn đảo","🏝️"],["forest","khu rừng","🌲"],
+  ["jungle","rừng rậm","🌴"],["waterfall","thác nước","💦"],["field","cánh đồng","🌾"],["star","ngôi sao","⭐"],
+  ["city","thành phố","🏙️"],["village","ngôi làng","🏘️"],["town","thị trấn","🏡"],["world","thế giới","🌍"],
+  ["building","tòa nhà","🏢"],["high","cao","🗻"],["famous","nổi tiếng","🌟"]]},
+ {id:"m8", no:"Bài 2.8", en:"Health & Body", vi:"Sức khỏe & Cơ thể", em:"🩺", c:"#C24D8C", items:[
+  ["back","lưng",null],["neck","cổ",null],["shoulder","vai",null],["stomach","bụng",null],["knee","đầu gối",null],
+  ["cold","cảm lạnh","🤧"],["cough","ho","😷"],["fever","sốt","🤒"],["headache","đau đầu","🤕"],["stomach-ache","đau bụng",null],
+  ["earache","đau tai","👂"],["toothache","đau răng","🦷"],["dentist","nha sĩ","🪥"],["nurse","y tá","👩‍⚕️"],
+  ["hospital","bệnh viện","🏥"],["medicine","thuốc","💊"],["helmet","mũ bảo hiểm","⛑️"],["What's the matter?","Con bị sao thế?","❓"]]},
+ {id:"m9", no:"Bài 2.9", en:"Jobs", vi:"Nghề nghiệp", em:"🧑‍🚒", c:"#3A8F4A", items:[
+  ["cook","đầu bếp","🧑‍🍳"],["driver","tài xế","🚖"],["farmer","nông dân","🧑‍🌾"],["pilot","phi công","🧑‍✈️"],
+  ["singer","ca sĩ","🧑‍🎤"],["police officer","cảnh sát","👮"],["firefighter","lính cứu hỏa","🧑‍🚒"],["vet","bác sĩ thú y","🐾"],
+  ["clown","chú hề","🤡"],["pirate","cướp biển","🏴‍☠️"],["artist","họa sĩ","🧑‍🎨"],["scientist","nhà khoa học","🧑‍🔬"]]},
+ {id:"m10", no:"Bài 2.10", en:"Transport", vi:"Phương tiện", em:"✈️", c:"#9A6A3A", items:[
+  ["bus","xe buýt","🚌"],["boat","con thuyền","🚤"],["motorbike","xe máy","🏍️"],["plane","máy bay","✈️"],
+  ["taxi","xe taxi","🚕"],["ship","tàu thủy","🚢"],["helicopter","trực thăng","🚁"],["ticket","vé","🎫"],
+  ["bus stop","trạm xe buýt","🚏"],["station","nhà ga","🚉"],["traffic lights","đèn giao thông","🚦"],["road","con đường","🛣️"]]},
+ {id:"m11", no:"Bài 2.11", en:"Feelings", vi:"Cảm xúc", em:"😲", c:"#4F5A78", items:[
+  ["bored","chán","🥱"],["surprised","ngạc nhiên","😲"],["worried","lo lắng","😟"],["excited","háo hức","🤩"],
+  ["frightened","sợ hãi","😱"],["kind","tốt bụng","🥰"],["brave","dũng cảm","🦸"],["proud","tự hào","😊"]]},
+ {id:"x1", no:"Ngữ pháp", en:"Irregular verbs", vi:"40 động từ bất quy tắc", em:"🔁", c:"#B4423A", grammar:true, items:[
+  ["go","went · đi"],["see","saw · nhìn thấy"],["eat","ate · ăn"],["drink","drank · uống"],["have","had · có"],
+  ["do","did · làm"],["get","got · nhận, lấy"],["come","came · đến"],["make","made · làm ra"],["take","took · cầm, mang đi"],
+  ["give","gave · cho, đưa"],["buy","bought · mua"],["bring","brought · mang đến"],["think","thought · nghĩ"],["find","found · tìm thấy"],
+  ["say","said · nói"],["run","ran · chạy"],["swim","swam · bơi"],["sing","sang · hát"],["sit","sat · ngồi"],
+  ["sleep","slept · ngủ"],["wake","woke · thức dậy"],["write","wrote · viết"],["read","read · đọc (/red/)"],["fly","flew · bay"],
+  ["ride","rode · cưỡi, đạp xe"],["drive","drove · lái xe"],["fall","fell · ngã"],["catch","caught · bắt"],["throw","threw · ném"],
+  ["lose","lost · thua, mất"],["win","won · thắng"],["put","put · đặt"],["cut","cut · cắt"],["hit","hit · đánh"],
+  ["know","knew · biết"],["tell","told · kể, bảo"],["speak","spoke · nói"],["wear","wore · mặc"],["draw","drew · vẽ"]]},
+ {id:"x2", no:"Ngữ pháp", en:"Comparatives", vi:"So sánh hơn & nhất", em:"📏", c:"#B4423A", grammar:true, items:[
+  ["tall","taller · the tallest"],["big","bigger · the biggest"],["hot","hotter · the hottest"],["nice","nicer · the nicest"],
+  ["happy","happier · the happiest"],["easy","easier · the easiest"],["funny","funnier · the funniest"],
+  ["beautiful","more beautiful · the most beautiful"],["difficult","more difficult · the most difficult"],
+  ["good","better · the best"],["bad","worse · the worst"]]},
+ {id:"x3", no:"Ngữ pháp", en:"Adverbs", vi:"Trạng từ tần suất & cách thức", em:"🐢", c:"#B4423A", grammar:true, items:[
+  ["always","100% · luôn luôn"],["usually","80% · thường thường"],["often","60% · hay, thường"],["sometimes","40% · thỉnh thoảng"],
+  ["never","0% · không bao giờ"],["quick","quickly · nhanh"],["slow","slowly · chậm"],["quiet","quietly · khẽ"],
+  ["loud","loudly · to, ồn"],["careful","carefully · cẩn thận"],["happy","happily · vui vẻ"],["easy","easily · dễ dàng"],
+  ["bad","badly · tệ"],["good","well · tốt, giỏi"],["fast","fast · nhanh"]]},
+ {id:"x4", no:"Ngữ pháp", en:"Linking & story words", vi:"Từ nối & từ kể chuyện", em:"🔗", c:"#B4423A", grammar:true, items:[
+  ["and","và"],["but","nhưng"],["because","bởi vì"],["so","vì vậy, nên"],["or","hoặc"],["one day","một ngày nọ"],
+  ["first","đầu tiên"],["then","sau đó"],["after that","sau đó nữa"],["suddenly","bỗng nhiên"],["finally","cuối cùng"]]},
+];
+const T_F=[
+ {id:"f1", no:"Bài 3.1", en:"Weather & Sudden events", vi:"Thời tiết & Sự việc bất ngờ", em:"⛈️", c:"#D9534F", items:[
+  ["storm","cơn bão","⛈️"],["thunder","sấm","🌩️"],["lightning","tia chớp","⚡"],["fog","sương mù","🌫️"],["ice","băng, đá","🧊"],
+  ["temperature","nhiệt độ","🌡️"],["wet","ướt","💦"],["dry","khô","🏜️"],["knock","gõ cửa","🚪"],["ring","reo (chuông)","🔔"],
+  ["break","làm vỡ","💔"],["drop","đánh rơi","🫳"],["fall over","ngã","🤕"],["appear","xuất hiện","✨"],["disappear","biến mất","🫥"],
+  ["suddenly","bỗng nhiên","❗"]]},
+ {id:"f2", no:"Bài 3.2", en:"Space & Future", vi:"Vũ trụ & Tương lai", em:"🚀", c:"#E0832B", items:[
+  ["space","vũ trụ","🌌"],["planet","hành tinh","🪐"],["rocket","tên lửa","🚀"],["astronaut","phi hành gia","🧑‍🚀"],
+  ["moon","mặt trăng","🌙"],["Earth","Trái Đất","🌍"],["spaceship","tàu vũ trụ","🛸"],["tomorrow","ngày mai","📆"],
+  ["next week","tuần sau","🗓️"],["next year","năm sau","🎆"],["soon","sắp, chẳng bao lâu","⏳"],["later","lát nữa","⏰"],
+  ["tonight","tối nay","🌃"],["in the future","trong tương lai","🔮"],["competition","cuộc thi","🏆"],["festival","lễ hội","🎎"]]},
+ {id:"f3", no:"Bài 3.3", en:"Travel & Experiences", vi:"Du lịch & Trải nghiệm", em:"🌏", c:"#C99A12", items:[
+  ["airport","sân bay","🛫"],["passport","hộ chiếu","🛂"],["journey","chuyến đi","🛤️"],["tourist","khách du lịch","📸"],
+  ["guide","hướng dẫn viên","🧭"],["luggage","hành lý","🧳"],["Japan","Nhật Bản",null],["China","Trung Quốc",null],
+  ["England","nước Anh",null],["Australia","nước Úc",null],["France","nước Pháp",null],["America","nước Mỹ",null],
+  ["snow","tuyết","☃️"],["elephant ride","cưỡi voi","🐘"],["hot-air balloon","khinh khí cầu","🎈"]]},
+ {id:"f4", no:"Bài 3.4", en:"Health & Environment", vi:"Sức khỏe & Môi trường", em:"♻️", c:"#4E9F3D", items:[
+  ["healthy","khỏe mạnh, tốt cho sức khỏe","🥗"],["unhealthy","không tốt cho sức khỏe","🍟"],["exercise","tập thể dục","🏃"],
+  ["rest","nghỉ ngơi","🛌"],["rubbish","rác","🗑️"],["bin","thùng rác","🚮"],["recycle","tái chế","♻️"],["plastic","nhựa","🧴"],
+  ["environment","môi trường","🌱"],["save water","tiết kiệm nước","🚰"],["turn off the lights","tắt đèn","💡"],
+  ["energy","năng lượng","🔋"],["pollution","ô nhiễm","🏭"]]},
+ {id:"f5", no:"Bài 3.5", en:"Nature & Wildlife", vi:"Thiên nhiên & Động vật hoang dã", em:"🦋", c:"#18978C", items:[
+  ["plant a tree","trồng cây","🌱"],["desert","sa mạc","🏜️"],["ocean","đại dương","🌊"],["volcano","núi lửa","🌋"],
+  ["insect","côn trùng","🐞"],["butterfly","con bướm","🦋"],["caterpillar","sâu bướm","🐛"],["nest","tổ chim","🪺"],
+  ["wing","cánh","🪽"],["feather","lông vũ","🪶"],["fur","bộ lông thú",null],["octopus","bạch tuộc","🐙"],["eagle","đại bàng","🦅"]]},
+ {id:"f6", no:"Bài 3.6", en:"People, Things & Places", vi:"Người, Đồ vật & Nơi chốn", em:"🏛️", c:"#2B66D9", items:[
+  ["inventor","nhà phát minh","💡"],["neighbour","hàng xóm","🏘️"],["journalist","nhà báo","📰"],["mechanic","thợ máy","🔧"],
+  ["waiter","người phục vụ","🤵"],["engineer","kỹ sư","👷"],["machine","máy móc","⚙️"],["key","chìa khóa","🔑"],
+  ["dictionary","từ điển","📖"],["envelope","phong bì","✉️"],["stamp","tem thư",null],["torch","đèn pin","🔦"],
+  ["telescope","kính thiên văn","🔭"],["museum","bảo tàng","🏛️"],["factory","nhà máy","🏭"],["office","văn phòng","🏢"],
+  ["post office","bưu điện","🏤"],["university","trường đại học","🎓"]]},
+ {id:"f7", no:"Bài 3.7", en:"Shopping & Sizes", vi:"Mua sắm & Kích cỡ", em:"🛍️", c:"#7A5BC7", items:[
+  ["size","kích cỡ","📏"],["fit","vừa (quần áo)","👕"],["expensive","đắt","💸"],["cheap","rẻ",null],["price","giá","🏷️"],
+  ["pay","trả tiền","💳"],["try on","mặc thử","🪞"],["shop assistant","nhân viên bán hàng","🧑‍💼"],["trainers","giày thể thao","👟"],
+  ["comfortable","thoải mái","😌"],["light","nhẹ","🪶"],["just right","vừa đúng","👌"]]},
+ {id:"f8", no:"Bài 3.8", en:"Opinions & Events", vi:"Nhận xét & Sự kiện", em:"🎪", c:"#C24D8C", items:[
+  ["lovely","dễ thương, tuyệt","🥰"],["amazing","tuyệt vời","🤩"],["awful","kinh khủng","😖"],["boring","chán","🥱"],
+  ["delicious","ngon","😋"],["exciting","thú vị, hào hứng","🎢"],["terrible","tồi tệ","😫"],["brilliant","xuất sắc","🌟"],
+  ["school fair","hội chợ trường","🎪"],["concert","buổi hòa nhạc","🎤"],["match","trận đấu","⚽"],["show","buổi biểu diễn","🎭"]]},
+ {id:"f9", no:"Bài 3.9", en:"Materials & Inventions", vi:"Chất liệu & Phát minh", em:"🧱", c:"#3A8F4A", items:[
+  ["wood","gỗ","🪵"],["metal","kim loại","🔩"],["glass","thủy tinh","🫙"],["paper","giấy","📄"],["gold","vàng","🥇"],
+  ["silver","bạc","🥈"],["wool","len","🧶"],["stone","đá","🪨"],["bamboo","tre","🎋"],["leaves","lá cây","🍃"],
+  ["telephone","điện thoại","☎️"],["light bulb","bóng đèn","💡"],["aeroplane","máy bay","✈️"],["computer","máy tính","💻"],["bicycle","xe đạp","🚲"]]},
+ {id:"f10", no:"Bài 3.10", en:"Mystery & Adventure", vi:"Bí ẩn & Phiêu lưu", em:"🗝️", c:"#9A6A3A", items:[
+  ["mystery","điều bí ẩn","🕵️"],["secret","bí mật","🤫"],["clue","manh mối","🔍"],["treasure","kho báu","💎"],
+  ["footprint","dấu chân","👣"],["ghost","con ma","👻"],["strange","kỳ lạ","🌀"],["hide","trốn, giấu","🙈"],
+  ["cave","hang động",null],["castle","lâu đài","🏰"],["attic","gác mái",null],["tunnel","đường hầm","🚇"],["tower","tòa tháp","🗼"]]},
+ {id:"y1", no:"Ngữ pháp", en:"Past participles (V3)", vi:"20 động từ: quá khứ · V3", em:"🔁", c:"#B4423A", grammar:true, items:[
+  ["be","was/were · been"],["go","went · gone"],["see","saw · seen"],["eat","ate · eaten"],["do","did · done"],
+  ["have","had · had"],["make","made · made"],["take","took · taken"],["break","broke · broken"],["forget","forgot · forgotten"],
+  ["write","wrote · written"],["ride","rode · ridden"],["fly","flew · flown"],["swim","swam · swum"],["win","won · won"],
+  ["meet","met · met"],["buy","bought · bought"],["hear","heard · heard"],["lose","lost · lost"],["read","read · read"]]},
+ {id:"y2", no:"Ngữ pháp", en:"Future & Modals", vi:"Tương lai & Động từ khuyết thiếu", em:"🔮", c:"#B4423A", grammar:true, items:[
+  ["will","sẽ (đoán, hứa, quyết định ngay)"],["be going to","sẽ (kế hoạch đã định)"],["should","nên"],["shouldn't","không nên"],
+  ["may","có thể (khoảng 50%)"],["might","có lẽ (ít chắc hơn)"],["could","đã có thể / nhờ lịch sự"],["must","phải"],
+  ["mustn't","cấm, không được"],["don't have to","không cần"]]},
+ {id:"y3", no:"Ngữ pháp", en:"who / which / some- / any-", vi:"Từ quan hệ & đại từ bất định", em:"🧩", c:"#B4423A", grammar:true, items:[
+  ["who","người (mà)"],["which","vật (mà)"],["where","nơi (mà)"],["something","một cái gì đó"],["anything","bất cứ cái gì"],
+  ["nothing","không có gì"],["everything","mọi thứ"],["someone","một ai đó"],["anyone","bất cứ ai"],["nobody","không ai"],
+  ["everyone","mọi người"],["somewhere","đâu đó"],["anywhere","bất cứ đâu"],["nowhere","không nơi nào"],["everywhere","khắp nơi"]]},
+ {id:"y4", no:"Ngữ pháp", en:"Signal words", vi:"Từ tín hiệu", em:"🚦", c:"#B4423A", grammar:true, items:[
+  ["ever","đã từng (câu hỏi)"],["never","chưa bao giờ"],["just","vừa mới"],["already","đã… rồi"],["yet","chưa / … chưa?"],
+  ["when","khi"],["while","trong khi"],["if","nếu"],["too","quá"],["enough","đủ"],["isn't it?","phải không? (câu hỏi đuôi)"]]},
+];
+T_S.forEach(t=>t.level='starters');T_M.forEach(t=>t.level='movers');T_F.forEach(t=>t.level='flyers');
+const TOPICS=[...T_S,...T_M,...T_F];
+TOPICS.forEach(t=>t.items=t.items.map(([en,vi,pic],i)=>({en,vi,pic:pic??null,id:t.id+"-"+i})));
+
+/* ---------- storage (per device, optional) ---------- */
+const KEY="the-tu-cambridge-known-v1";
+const LKEY="the-tu-cambridge-level";
+let level="starters";try{level=localStorage.getItem(LKEY)||"starters"}catch(e){}
+if(!LEVELS.some(l=>l.id===level))level="starters";
+let known=new Set();
+try{known=new Set(JSON.parse(localStorage.getItem(KEY)||"[]"))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...known]))}catch(e){}};
+
+/* ---------- speech ---------- */
+let voice=null;
+function pickVoice(){
+  try{const vs=speechSynthesis.getVoices();
+    voice=vs.find(v=>/en-GB/i.test(v.lang)&&/female|Serena|Kate|Martha|Google UK English Female/i.test(v.name))||vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}catch(e){}
+}
+if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(text){
+  if(!("speechSynthesis" in window))return;
+  const t=text.replace(/\(([^)]+)\)/g,", $1").replace(/\s\/\s/g,", ").replace(/·/g,". ");
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.85;if(voice)u.voice=voice;speechSynthesis.speak(u);}catch(e){}
+}
+
+/* ---------- pictures ---------- */
+function prepSVG(k){
+  const box=(x,y)=>`<rect x="${x}" y="${y}" width="60" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>`;
+  const ball=(x,y,o=1)=>`<circle cx="${x}" cy="${y}" r="12" fill="#E25D5D" opacity="${o}"/>`;
+  const floor=`<line x1="6" y1="92" x2="134" y2="92" stroke="currentColor" stroke-width="2" opacity=".35"/>`;
+  let s="";
+  if(k==="in") s=`${ball(70,68)}<path d="M40 48 V92 H100 V48" fill="none" stroke="currentColor" stroke-width="3"/>`+floor;
+  if(k==="on") s=box(40,48)+ball(70,35)+floor;
+  if(k==="under") s=`<rect x="30" y="34" width="80" height="6" fill="currentColor"/><line x1="36" y1="40" x2="36" y2="92" stroke="currentColor" stroke-width="4"/><line x1="104" y1="40" x2="104" y2="92" stroke="currentColor" stroke-width="4"/>`+ball(70,80)+floor;
+  if(k==="next") s=box(28,48)+ball(108,80)+floor;
+  if(k==="behind") s=ball(82,40)+`<rect x="40" y="48" width="60" height="44" rx="4" style="fill:var(--surface)" stroke="currentColor" stroke-width="3"/>`+floor;
+  if(k==="front") s=box(40,36)+ball(70,82)+floor;
+  if(k==="between") s=`<rect x="8" y="48" width="40" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><rect x="92" y="48" width="40" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>`+ball(70,80)+floor;
+  return `<svg viewBox="0 0 140 100" role="img" aria-label="${k}">${s}</svg>`;
+}
+function picHTML(item,cls="pic"){
+  const p=item.pic;
+  if(p&&p.sw) return `<div class="swatch" style="background:${p.sw}"></div>`;
+  if(p&&p.prep) return `<div class="${cls}">${prepSVG(p.prep)}</div>`;
+  if(p) return `<div class="${cls}" aria-hidden="true">${p}</div>`;
+  return "";
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- state ---------- */
+const S={view:"home",topic:null,mode:"flip",
+  flip:{order:[],pos:0,flipped:false,startVi:false,onlyNew:false,shuffled:false},
+  quiz:null, mem:null};
+const app=document.getElementById("app");
+
+function setHash(h){try{history.replaceState(null,"","#"+h)}catch(e){}}
+
+/* ---------- home ---------- */
+function renderHome(){
+  S.view="home"; setHash("home");
+  app.style.removeProperty("--c");
+  const L=LEVELS.find(l=>l.id===level), LT=TOPICS.filter(t=>t.level===level);
+  const all=LT.reduce((n,t)=>n+t.items.length,0);
+  const k=LT.reduce((n,t)=>n+t.items.filter(i=>known.has(i.id)).length,0);
+  const tile=t=>{const kk=t.items.filter(i=>known.has(i.id)).length;
+    return `<button class="topic" style="--c:${t.c}" data-t="${t.id}">
+      <span class="em" aria-hidden="true">${t.em}</span>
+      <span class="no">${t.no}</span>
+      <span class="en">${esc(t.en)}</span>
+      <span class="vi">${esc(t.vi)}</span>
+      <span class="mini"><span class="bar"><i style="width:${kk/t.items.length*100}%;background:${t.c}"></i></span>${kk}/${t.items.length}</span>
+    </button>`};
+  app.innerHTML=`
+   <header class="top"><h1>Thẻ Từ <span>${L.name}</span></h1>
+    <p class="sub">${L.sub} · ${all} thẻ. Chạm vào thẻ để lật, bấm loa để nghe đọc.</p></header>
+   <nav class="modes" aria-label="Chọn giai đoạn">${LEVELS.map(l=>`<button data-l="${l.id}" aria-pressed="${l.id===level}">${l.name}</button>`).join("")}</nav>
+   <section class="overall" aria-label="Tiến độ">
+    <span>Bé đã thuộc</span><b>${k}/${all}</b>
+    <span class="bar"><i style="width:${k/all*100}%"></i></span>
+    <button class="reset" id="reset">Làm lại từ đầu</button>
+   </section>
+   <div class="group-label">Từ vựng theo chủ đề</div>
+   <div class="topics">${LT.filter(t=>!t.grammar).map(tile).join("")}</div>
+   <div class="group-label">Thẻ ngữ pháp</div>
+   <div class="topics">${LT.filter(t=>t.grammar).map(tile).join("")}</div>
+   <p class="foot">Tiến độ “đã thuộc” được lưu trên trình duyệt của máy này. Giọng đọc dùng giọng tiếng Anh có sẵn trên máy; nếu không nghe thấy, kiểm tra âm lượng hoặc thử trình duyệt Chrome/Safari.</p>`;
+  app.querySelectorAll(".topic").forEach(b=>b.onclick=()=>openTopic(b.dataset.t));
+  app.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{level=b.dataset.l;try{localStorage.setItem(LKEY,level)}catch(e){};renderHome();});
+  const r=document.getElementById("reset"); let armed=false;
+  r.onclick=()=>{ if(!armed){armed=true;r.textContent="Bấm lần nữa để xoá tiến độ";setTimeout(()=>{armed=false;r.textContent="Làm lại từ đầu"},3000);return;}
+    LT.forEach(t=>t.items.forEach(i=>known.delete(i.id)));save();renderHome(); };
+}
+
+/* ---------- topic shell ---------- */
+function openTopic(id,mode){
+  S.topic=TOPICS.find(t=>t.id===id); level=S.topic.level; S.view="topic"; S.mode=mode||"flip";
+  S.flip={order:S.topic.items.map((_,i)=>i),pos:0,flipped:false,startVi:false,onlyNew:false,shuffled:false};
+  S.quiz=null;S.mem=null; renderTopic();
+}
+function renderTopic(){
+  const t=S.topic; setHash(t.id);
+  const kk=t.items.filter(i=>known.has(i.id)).length;
+  app.style.setProperty("--c",t.c);
+  app.innerHTML=`
+   <header class="top">
+     <button class="back" id="back">← Chủ đề</button>
+     <h1 style="font-size:clamp(24px,4.5vw,34px)">${t.em} ${esc(t.en)}</h1>
+     <p class="sub">${t.no} · ${esc(t.vi)} · đã thuộc ${kk}/${t.items.length}</p>
+   </header>
+   <nav class="modes" aria-label="Chế độ học">
+     ${[["flip","Lật thẻ"],["quiz","Trắc nghiệm"],["listen","Nghe & chọn"],["mem","Ghép đôi"]].map(([m,l])=>`<button data-m="${m}" aria-pressed="${S.mode===m}">${l}</button>`).join("")}
+   </nav>
+   <div id="body"></div>`;
+  document.getElementById("back").onclick=renderHome;
+  app.querySelectorAll(".modes button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;S.quiz=null;S.mem=null;renderTopic();});
+  ({flip:renderFlip,quiz:()=>renderQuiz(false),listen:()=>renderQuiz(true),mem:renderMem})[S.mode]();
+}
+
+/* ---------- flip ---------- */
+function flipList(){const t=S.topic,f=S.flip;return f.order.filter(i=>!f.onlyNew||!known.has(t.items[i].id));}
+function renderFlip(){
+  const t=S.topic,f=S.flip,body=document.getElementById("body");
+  const list=flipList();
+  const opts=`<div class="opts">
+     <button class="chip" id="o-shuffle" aria-pressed="${f.shuffled}">Xáo trộn</button>
+     <button class="chip" id="o-vi" aria-pressed="${f.startVi}">Hiện tiếng Việt trước</button>
+     <button class="chip" id="o-new" aria-pressed="${f.onlyNew}">Chỉ thẻ chưa thuộc</button></div>`;
+  if(!list.length){
+    body.innerHTML=opts+`<div class="empty"><b>Bé đã thuộc hết chủ đề này!</b>Tắt “Chỉ thẻ chưa thuộc” để ôn lại, hoặc chơi Trắc nghiệm.</div>`;
+    bindFlipOpts();return;
+  }
+  if(f.pos>=list.length)f.pos=0;
+  const it=t.items[list[f.pos]];
+  const isK=known.has(it.id);
+  const pic=picHTML(it) || (t.grammar?"":`<div class="letter">${esc(it.en[0].toUpperCase())}</div>`);
+  const enFace=`<div class="tag">${t.no}</div>${pic}<div class="word">${esc(it.en)}</div>`;
+  const viFace=`<div class="tag">${t.no}</div>${t.grammar?`<div class="word">${esc(it.vi)}</div>`:`<div class="vi">${esc(it.vi)}</div>`}`;
+  const front=f.startVi?viFace:enFace, back=f.startVi?enFace:viFace;
+  body.innerHTML=opts+`
+   <div class="stage">
+     <button class="card ${f.flipped?"flipped":""}" id="card" aria-label="Lật thẻ">
+       <div class="face front">${front}<span class="hint" style="position:absolute;bottom:14px">chạm để lật</span></div>
+       <div class="face back">${back}</div>
+     </button>
+   </div>
+   <div class="count">${f.pos+1} / ${list.length}${isK?'<span class="known-badge">✓ đã thuộc</span>':""}</div>
+   <div class="actions">
+     <button class="btn" id="prev" aria-label="Thẻ trước">←</button>
+     <button class="btn" id="say" aria-label="Nghe đọc">🔊 Nghe</button>
+     <button class="btn again" id="again">Ôn lại</button>
+     <button class="btn know" id="know">Đã thuộc ✓</button>
+     <button class="btn" id="next" aria-label="Thẻ sau">→</button>
+   </div>`;
+  const card=document.getElementById("card");
+  card.onclick=()=>{f.flipped=!f.flipped;card.classList.toggle("flipped",f.flipped); if(f.flipped===f.startVi)speak(sayText(it));};
+  document.getElementById("say").onclick=()=>speak(sayText(it));
+  const go=d=>{f.pos=(f.pos+d+list.length)%list.length;f.flipped=false;renderFlip();};
+  document.getElementById("prev").onclick=()=>go(-1);
+  document.getElementById("next").onclick=()=>go(1);
+  document.getElementById("again").onclick=()=>{known.delete(it.id);save();go(1);};
+  document.getElementById("know").onclick=()=>{known.add(it.id);save(); if(f.onlyNew){f.flipped=false;renderFlip();} else go(1);};
+  bindFlipOpts();
+}
+function sayText(it){if(S.topic.grammar){const p=it.vi.split(" · ").filter(x=>!/[à-ỹđ%]/i.test(x));if(p.length)return [it.en,...p].join(". ");}return it.en;}
+function bindFlipOpts(){
+  const f=S.flip,t=S.topic;
+  document.getElementById("o-shuffle").onclick=()=>{f.shuffled=!f.shuffled;f.order=f.shuffled?shuffle(t.items.map((_,i)=>i)):t.items.map((_,i)=>i);f.pos=0;f.flipped=false;renderFlip();};
+  document.getElementById("o-vi").onclick=()=>{f.startVi=!f.startVi;f.flipped=false;renderFlip();};
+  document.getElementById("o-new").onclick=()=>{f.onlyNew=!f.onlyNew;f.pos=0;f.flipped=false;renderFlip();};
+}
+
+/* ---------- quiz ---------- */
+function newQuiz(listen){
+  const items=S.topic.items, n=Math.min(10,items.length);
+  const qs=shuffle(items).slice(0,n).map(ans=>{
+    const pool=shuffle(items.filter(i=>i.id!==ans.id && i.en!==ans.en)).slice(0,3);
+    return {ans,choices:shuffle([ans,...pool]),picked:null};
+  });
+  return {listen,qs,i:0,score:0};
+}
+function renderQuiz(listen){
+  if(!S.quiz||S.quiz.listen!==listen)S.quiz=newQuiz(listen);
+  const Q=S.quiz,body=document.getElementById("body"),t=S.topic;
+  if(Q.i>=Q.qs.length){
+    const pct=Q.score/Q.qs.length, stars=pct>=.9?3:pct>=.6?2:pct>0?1:0;
+    body.innerHTML=`<div class="q-card"><div class="stars" aria-label="${stars} sao">${"★".repeat(stars)}${"☆".repeat(3-stars)}</div>
+      <h2 style="font-size:30px;margin:8px 0">Đúng ${Q.score}/${Q.qs.length} câu</h2>
+      <p style="color:var(--muted)">${stars===3?"Giỏi quá! Bé nhớ rất tốt.":stars===2?"Tốt lắm! Lật thẻ ôn lại vài từ nữa nhé.":"Cùng lật thẻ ôn lại rồi chơi lần nữa nhé."}</p>
+      <div class="actions"><button class="btn primary" id="again-q">Chơi lại</button><button class="btn" id="to-flip">Lật thẻ ôn</button></div></div>`;
+    document.getElementById("again-q").onclick=()=>{S.quiz=newQuiz(listen);renderQuiz(listen)};
+    document.getElementById("to-flip").onclick=()=>{S.mode="flip";renderTopic()};
+    return;
+  }
+  const q=Q.qs[Q.i], it=q.ans;
+  const prompt = listen
+    ? `<button class="big-say" id="qsay" aria-label="Nghe lại">🔊</button><div style="color:var(--muted);font-size:13px">Nghe và chọn từ đúng</div>`
+    : `${picHTML(it)}<div class="vi">${esc(it.vi)}</div><div style="color:var(--muted);font-size:13px">${t.grammar?"Chọn thẻ đi cùng":"Từ tiếng Anh là gì?"}</div>`;
+  const label=c=> listen && !t.grammar && c.pic && !c.pic.prep ? `${c.pic.sw?`<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:${c.pic.sw};border:1px solid var(--grid-strong);vertical-align:middle;margin-right:6px"></span>`:`<span aria-hidden="true">${c.pic} </span>`}${esc(c.en)}` : esc(c.en);
+  body.innerHTML=`<div class="q-card">
+    <div class="q-top"><span>Câu ${Q.i+1}/${Q.qs.length}</span><span>Đúng: ${Q.score}</span></div>
+    <div class="q-prompt">${prompt}</div>
+    <div class="choices">${q.choices.map((c,k)=>`<button class="choice" data-k="${k}">${label(c)}</button>`).join("")}</div>
+    <div class="actions" id="q-next" hidden><button class="btn primary" id="nextq">Câu tiếp →</button></div></div>`;
+  if(listen){const b=document.getElementById("qsay");b.onclick=()=>speak(it.en);setTimeout(()=>speak(it.en),250);}
+  const btns=[...body.querySelectorAll(".choice")];
+  btns.forEach(b=>b.onclick=()=>{
+    if(q.picked!==null)return;
+    const c=q.choices[+b.dataset.k]; q.picked=c;
+    const right=c.id===it.id;
+    if(right){Q.score++;b.classList.add("ok");}
+    else{b.classList.add("no");btns[q.choices.indexOf(it)].classList.add("ok");}
+    speak(it.en);
+    document.getElementById("q-next").hidden=false;
+    document.getElementById("nextq").focus();
+  });
+  document.getElementById("nextq").onclick=()=>{Q.i++;renderQuiz(listen)};
+}
+
+/* ---------- memory ---------- */
+function newMem(){
+  const pick=shuffle(S.topic.items).slice(0,Math.min(6,S.topic.items.length));
+  const tiles=shuffle(pick.flatMap(it=>[{it,side:"en"},{it,side:"vi"}])).map((x,i)=>({...x,i,open:false,done:false}));
+  return {tiles,first:null,lock:false,moves:0,pairs:0,total:pick.length};
+}
+function renderMem(){
+  if(!S.mem)S.mem=newMem();
+  const M=S.mem,body=document.getElementById("body"),t=S.topic;
+  const face=x=> x.side==="en"
+     ? `${t.grammar?"":picHTML(x.it,"t-pic")}<span class="t-word">${esc(x.it.en)}</span>`
+     : `<span class="${t.grammar?"t-word":"t-vi"}">${esc(x.it.vi)}</span>`;
+  const done=M.pairs===M.total;
+  body.innerHTML=`<p class="mem-info">${done?`Xong! Bé ghép đủ ${M.total} cặp sau ${M.moves} lượt.`:`Lật 2 thẻ để tìm cặp tiếng Anh – tiếng Việt · ${M.pairs}/${M.total} cặp · ${M.moves} lượt`}</p>
+   <div class="mem">${M.tiles.map(x=>`<button class="tile ${x.open?"open":""} ${x.done?"done":""}" data-i="${x.i}" aria-label="${x.open||x.done?"":"Thẻ úp"}">${x.open||x.done?face(x):"?"}</button>`).join("")}</div>
+   ${done?`<div class="actions" style="margin-top:16px"><button class="btn primary" id="mem-again">Chơi ván mới</button></div>`:""}`;
+  body.querySelectorAll(".tile").forEach(b=>b.onclick=()=>memClick(+b.dataset.i));
+  if(done)document.getElementById("mem-again").onclick=()=>{S.mem=newMem();renderMem()};
+}
+function memClick(i){
+  const M=S.mem,x=M.tiles[i];
+  if(M.lock||x.open||x.done)return;
+  x.open=true; if(x.side==="en")speak(x.it.en);
+  if(M.first===null){M.first=i;renderMem();return;}
+  const y=M.tiles[M.first]; M.moves++;
+  if(y.it.id===x.it.id){x.done=y.done=true;x.open=y.open=false;M.pairs++;M.first=null;renderMem();}
+  else{M.lock=true;renderMem();setTimeout(()=>{x.open=y.open=false;M.first=null;M.lock=false;renderMem();},1000);}
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener("keydown",e=>{
+  if(S.view!=="topic"||S.mode!=="flip")return;
+  if(e.target.closest&&e.target.closest(".chip"))return;
+  if(e.key==="ArrowRight")document.getElementById("next")?.click();
+  if(e.key==="ArrowLeft")document.getElementById("prev")?.click();
+  if(e.key===" "&&!e.target.closest("button")){e.preventDefault();document.getElementById("card")?.click();}
+});
+
+/* ---------- boot ---------- */
+const h=(location.hash||"").slice(1);
+if(TOPICS.some(t=>t.id===h))openTopic(h); else renderHome();
+</script>
+
+</body>
+</html>
